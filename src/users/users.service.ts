@@ -14,6 +14,9 @@ export class UsersService {
     }
     //find user
     async findOne(id: number) {
+        if (id === null) {
+            return null
+        }
         const user = await this.repo.findOne(id)
         if (!user) {
             throw new Error('user not found')
