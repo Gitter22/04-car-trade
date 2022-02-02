@@ -10,7 +10,6 @@ import { AuthGuard } from 'src/guards/auth.guard';
 import { UseGuards } from '@nestjs/common';
 
 @Controller('auth')
-
 export class UsersController {
     constructor(private usersService: UsersService,
         private authService: AuthService) { }
