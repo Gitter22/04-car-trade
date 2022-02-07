@@ -1,5 +1,6 @@
-import { MiddlewareConsumer, Module, NestMiddleware, ValidationPipe } from '@nestjs/common';
+import { MiddlewareConsumer, Module, ValidationPipe } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { UsersModule } from './users/users.module';
@@ -8,12 +9,22 @@ import { User } from './users/user.entity';
 import { Report } from './reports/report.entity'
 const cookieSession = require('cookie-session')
 import { APP_PIPE } from '@nestjs/core';
+
+
 @Module({
-  imports: [TypeOrmModule.forRoot({
-    type: 'sqlite',
-    database: 'db.sqlite',
-    entities: [User, Report],
-    synchronize: true
+  imports: [ConfigModule.forRoot({
+    isGlobal: true,
+    envFilePath: `.${process.env.NODE_ENV}.env`
+  }), TypeOrmModule.forRootAsync({
+    inject: [ConfigService],
+    useFactory: (config: ConfigService) => {
+      return {
+        type: 'sqlite',
+        database: 'db.sqlite',
+        synchronize: true, //never set it to true in production environment/once app is deployed
+        entities: [User, Report],
+      }
+    }
   }), UsersModule, ReportsModule],
   controllers: [AppController],
   providers: [AppService, {
@@ -22,11 +33,24 @@ import { APP_PIPE } from '@nestjs/core';
   }],
 })
 export class AppModule {
+  constructor(private configService: ConfigService) { }
   configure(consumer: MiddlewareConsumer) {
     consumer.apply(
       cookieSession({
-        keys: ['secret']
+        keys: [this.configService.get('DB_NAME')]
       })
     ).forRoutes('*')
   }
 }
+
+// TypeOrmModule.forRootAsync({
+//   inject: [ConfigService],
+//   useFactory: (config: ConfigService) => {
+//     return {
+//       type: 'sqlite',
+//       database: 'db.sqlite',
+//       synchronize: true, //never set it to true in production environment/once app is deployed
+//       entities: [User, Report],
+//     }
+//   }
+// })
