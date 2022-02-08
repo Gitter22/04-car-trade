@@ -1,6 +1,6 @@
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import { MiddlewareConsumer, Module, ValidationPipe } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { ConfigModule, ConfigService } from '@nestjs/config';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { UsersModule } from './users/users.module';
@@ -16,18 +16,19 @@ import { APP_PIPE } from '@nestjs/core';
     isGlobal: true,
     envFilePath: `.${process.env.NODE_ENV}.env`
   }), TypeOrmModule.forRootAsync({
+    imports: [ConfigModule],
     inject: [ConfigService],
     useFactory: (config: ConfigService) => {
       return {
         type: 'sqlite',
-        database: 'db.sqlite',
+        database: config.get('DB_NAME'),
         synchronize: true, //never set it to true in production environment/once app is deployed
         entities: [User, Report],
       }
     }
   }), UsersModule, ReportsModule],
   controllers: [AppController],
-  providers: [AppService, {
+  providers: [AppService, ConfigService, {
     provide: APP_PIPE,
     useValue: new ValidationPipe({ whitelist: true })
   }],
@@ -37,7 +38,7 @@ export class AppModule {
   configure(consumer: MiddlewareConsumer) {
     consumer.apply(
       cookieSession({
-        keys: [this.configService.get('DB_NAME')]
+        keys: [this.configService.get('COOKIE_KEY')]
       })
     ).forRoutes('*')
   }
