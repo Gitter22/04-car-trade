@@ -14,7 +14,7 @@ import { APP_PIPE } from '@nestjs/core';
 @Module({
   imports: [ConfigModule.forRoot({
     isGlobal: true,
-    envFilePath: `.${process.env.NODE_ENV}.env`
+    envFilePath: `./src/.${process.env.NODE_ENV}.env`
   }), TypeOrmModule.forRootAsync({
     imports: [ConfigModule],
     inject: [ConfigService],

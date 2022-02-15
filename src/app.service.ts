@@ -5,7 +5,7 @@ import { ConfigService } from '@nestjs/config';
 export class AppService {
   constructor(private configService: ConfigService) { }
   getHello(): string {
-    console.log(this.configService.get('DB_NAME'))
+    console.log(this.configService.get('COOKIE_KEY'))
     return 'Hello World!';
   }
 }
